@@ -17,7 +17,7 @@ import type {
 } from '../../../../shared/workflows/workflow-run-types'
 import type { WorkflowValidationIssue } from '../../../../shared/workflows/workflow-validation-issues'
 
-/** Definitions are stored by this app's own runtime (notes D7); runs live on the host that executes them. */
+/** Definitions are stored by this app's own runtime; runs live on the host that executes them. */
 const DEFINITION_HOST: RuntimeClientTarget = { kind: 'local' }
 
 export type WorkflowDefinitionList = {
