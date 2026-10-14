@@ -33,6 +33,7 @@ While a run is open you can:
 
 - follow each step's status, attempts, timing and result summary;
 - **Open agent terminal** to watch or help a running step;
+- **Stop this attempt** to end one step's agent; a step that is still launching is stopped as soon as its agent is up. The step can then be retried;
 - open the files a step reported changing (they belong to the step's host and workspace);
 - **Pause**: no new steps start; running steps continue and their results are recorded. **Resume** re-checks what is ready and starts it once.
 - **Cancel run**: stops only the agents this run started. If a host cannot confirm a stop, the step stays marked as unconfirmed until it can.
@@ -41,7 +42,7 @@ Closing the page or reloading the window does not stop a run; the host keeps dri
 
 ## When a step fails
 
-The failure reason is shown on the step and later steps wait. **Retry step** starts a new attempt with the same prompt and inputs; finished steps keep their results and old attempts stay in the history. The workspace may still contain partial changes from the failed attempt. To change parameters or the workflow, use **Run again** instead, which starts a new run.
+The failure reason is shown on the step and later steps wait. **Retry step** starts a new attempt with the same prompt and inputs; finished steps keep their results and old attempts stay in the history. Retrying closes the failed attempt's agent terminal, so two agents never share the workspace; until then it stays open for you to inspect. The workspace may still contain partial changes from the failed attempt. To change parameters or the workflow, use **Run again** instead, which starts a new run.
 
 ## Parameters and templates
 
