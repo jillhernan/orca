@@ -40,7 +40,11 @@ export function useWorkflowDefinitions(): WorkflowDefinitionsState & {
   }, [])
   useEffect(() => {
     void refresh()
+    // Why: definitions created from the CLI or another window appear only after a refetch.
+    const refreshOnFocus = (): void => void refresh()
+    window.addEventListener('focus', refreshOnFocus)
     return () => {
+      window.removeEventListener('focus', refreshOnFocus)
       generation.current += 1
     }
   }, [refresh])

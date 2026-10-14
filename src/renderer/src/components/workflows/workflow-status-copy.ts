@@ -223,3 +223,17 @@ export function issueMessage(issue: WorkflowValidationIssue): string {
       return issue.message
   }
 }
+
+/** For flat issue lists: a step-scoped issue names its step, so two steps' issues stay distinct. */
+export function stepScopedIssueMessage(
+  issue: WorkflowValidationIssue,
+  steps: readonly { id: string; name: string }[]
+): string {
+  const step = issue.stepId ? steps.find((candidate) => candidate.id === issue.stepId) : undefined
+  return step
+    ? translate('auto.components.workflows.issue.stepPrefixed', '{{step}}: {{message}}', {
+        step: step.name || step.id,
+        message: issueMessage(issue)
+      })
+    : issueMessage(issue)
+}

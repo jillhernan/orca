@@ -18010,7 +18010,8 @@
           "promptCaption": "Prompt the agent receives ({{value0}} bytes). Results of earlier steps replace the bracketed placeholders."
         },
         "list": {
-          "stepCount": "{{value0}} steps",
+          "stepCount_one": "{{count}} step",
+          "stepCount_other": "{{count}} steps",
           "noDescription": "No description",
           "updated": "Updated {{value0}}",
           "openLatestRun": "Open latest run",
@@ -18122,7 +18123,8 @@
           "loading": "Loading runs…",
           "empty": "No runs match these filters.",
           "meta": "rev {{value0}} · {{value1}} · {{value2}}",
-          "steps": "{{value0}}/{{value1}} steps"
+          "steps_one": "{{done}}/{{count}} step",
+          "steps_other": "{{done}}/{{count}} steps"
         },
         "attempt": {
           "title": "Attempt {{value0}}",
@@ -18159,7 +18161,8 @@
           "pausedHelp": "Paused: no new steps start. Steps already running keep going and their results are recorded.",
           "cancellingHelp": "Stopping the agents this run started. A stop the host cannot confirm stays listed until it can be verified.",
           "unreachable": "{{value0}} is not responding. The state below is the last one it reported and cannot be verified now; the run keeps going on the host.",
-          "progress": "{{value0}} of {{value1}} steps done",
+          "progress_one": "{{done}} of {{count}} step done",
+          "progress_other": "{{done}} of {{count}} steps done",
           "listView": "Steps",
           "graphView": "Graph",
           "attempts": "{{value0}} attempts"
@@ -18309,7 +18312,8 @@
           "agentUnavailable": "Agent {{value0}} is not available on this host.",
           "agentMissing": "This host has no default agent. Choose an agent for this step or the workflow.",
           "targetRequired": "Choose a workspace on this host.",
-          "targetNotGit": "Isolated steps need a Git repository; this workspace is a plain folder."
+          "targetNotGit": "Isolated steps need a Git repository; this workspace is a plain folder.",
+          "stepPrefixed": "{{step}}: {{message}}"
         }
       }
     },

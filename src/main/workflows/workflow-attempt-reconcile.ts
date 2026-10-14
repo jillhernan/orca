@@ -246,6 +246,11 @@ async function continueStop(
   if (observation && settleFromObservation(ctx, run, attempt, dispatchId, observation, true)) {
     return
   }
+  // A launching agent has no terminal to close yet, and a refused stop waits STOP_RETRY_MS;
+  // the start's completion kicks a tick that stops it.
+  if (ctx.inflightStarts.has(attempt.id)) {
+    return
+  }
   if (ctx.stopsInFlight.has(attempt.id) || !ctx.isDue(`stop:${attempt.id}`, STOP_RETRY_MS)) {
     return
   }

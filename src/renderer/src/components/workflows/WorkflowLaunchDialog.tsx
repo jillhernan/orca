@@ -46,7 +46,7 @@ import {
   workflowHostFromKey,
   type WorkflowWorkspaceOption
 } from './workflow-hosts'
-import { issueMessage } from './workflow-status-copy'
+import { issueMessage, stepScopedIssueMessage } from './workflow-status-copy'
 import { WorkflowParameterInput } from './WorkflowParameterInput'
 import { WorkflowLaunchPlanPreview } from './WorkflowLaunchPlanPreview'
 
@@ -352,7 +352,7 @@ export function WorkflowLaunchDialog({
               <ul role="alert" className="list-disc space-y-1 pl-5 text-sm text-destructive">
                 {otherIssues.map((issue) => (
                   <li key={`${issue.field}:${issue.code}:${issue.message}`}>
-                    {issueMessage(issue)}
+                    {stepScopedIssueMessage(issue, definition.body.steps)}
                   </li>
                 ))}
               </ul>

@@ -30,6 +30,7 @@ export class WorkflowScheduler {
   private readonly lastProbe = new Map<string, number>()
   private readonly pendingStarts = new Set<Promise<void>>()
   private readonly runLocks = new Map<string, Promise<void>>()
+  private readonly releasedDispatches = new Set<string>()
   private readonly ctx: WorkflowReconcileContext
   private timer: ReturnType<typeof setTimeout> | null = null
   private ticking: Promise<void> | null = null
@@ -135,6 +136,7 @@ export class WorkflowScheduler {
     if (run.control === 'cancel') {
       closeOpenDecisions(this.ctx, run, attempts)
       this.stopActiveAttempts(run, attempts)
+      this.releaseFailedWorkers(attempts)
       attempts = store.runs.listAttempts(runId)
     } else if (run.control === 'run') {
       this.startReadySteps(run, attempts)
@@ -186,6 +188,10 @@ export class WorkflowScheduler {
       if (!attempt) {
         continue
       }
+      if (retryOf?.dispatchId) {
+        // The retry supersedes the failed agent; closing it keeps two agents out of one folder.
+        void this.ctx.port.releaseWorker(retryOf.dispatchId)
+      }
       active += 1
       sharedBusy ||= shared
       this.launch(run, step, attempt, retryOf)
@@ -225,6 +231,17 @@ export class WorkflowScheduler {
           stepId: attempt.stepId,
           attemptId: attempt.id
         })
+      }
+    }
+  }
+
+  /** A failed agent stays open for inspection until a retry supersedes it or the run is cancelled. */
+  private releaseFailedWorkers(attempts: readonly WorkflowAttempt[]): void {
+    for (const attempt of attempts) {
+      const dispatchId = attempt.dispatchId
+      if (attempt.state === 'failed' && dispatchId && !this.releasedDispatches.has(dispatchId)) {
+        this.releasedDispatches.add(dispatchId)
+        void this.ctx.port.releaseWorker(dispatchId)
       }
     }
   }

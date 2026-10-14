@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useAppStore } from '@/store'
 import { translate } from '@/i18n/i18n'
 import { callRuntimeRpc } from '@/runtime/runtime-rpc-client'
+import { branchName } from '@/lib/git-utils'
 import type { RuntimeClientTarget } from '../../../../shared/runtime-client-target'
 import { getLocalExecutionHostLabel } from '../../../../shared/execution-host'
 import { isFolderRepo } from '../../../../shared/repo-kind'
@@ -111,10 +112,11 @@ export async function listWorkflowWorkspaces(
     .map((worktree) => {
       const repo = repoById.get(worktree.repoId)
       const repoName = repo?.displayName ?? worktree.repoId
+      const branch = worktree.git.branch ? branchName(worktree.git.branch) : ''
       return {
         id: worktree.id,
-        label: worktree.displayName || worktree.git.branch || worktree.git.path,
-        detail: worktree.git.branch ? `${repoName} · ${worktree.git.branch}` : repoName,
+        label: worktree.displayName || branch || worktree.git.path,
+        detail: branch ? `${repoName} · ${branch}` : repoName,
         isGit: repo ? !isFolderRepo(repo) : false
       }
     })

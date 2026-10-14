@@ -19,6 +19,7 @@ import { listWorkflowRuns, workflowErrorMessage } from './workflow-client'
 import { describeHostAvailability, useWorkflowHostOptions } from './workflow-hosts'
 import { runStatusLabel } from './workflow-status-copy'
 import { WorkflowRunStatusBadge } from './WorkflowStatusBadge'
+import { workflowHistoryStepsLabel } from './workflow-count-copy'
 
 const ALL = '__all__'
 const STATUSES: WorkflowRunStatus[] = [
@@ -225,14 +226,7 @@ export function WorkflowRunHistoryView({
                     )}
                   </span>
                   <span className="text-xs text-muted-foreground tabular-nums">
-                    {translate(
-                      'auto.components.workflows.history.steps',
-                      '{{value0}}/{{value1}} steps',
-                      {
-                        value0: run.succeededSteps,
-                        value1: run.stepCount
-                      }
-                    )}
+                    {workflowHistoryStepsLabel(run.succeededSteps, run.stepCount)}
                   </span>
                   <span className="text-xs text-muted-foreground">
                     {formatUiRelativeTimeFromDate(run.createdAt)}

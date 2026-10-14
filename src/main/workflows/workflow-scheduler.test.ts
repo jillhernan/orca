@@ -137,6 +137,7 @@ describe('WorkflowScheduler', () => {
     const retry = port.starts.at(-1)!
     expect(retry.retryOfDispatchId).toBe(firstB.id)
     expect(retry.taskId).toBe(firstB.taskId)
+    expect(port.releases).toContain(firstB.id)
     // The old attempt's late report cannot finish the new one.
     expect(port.report(firstB.id, 'succeeded', 'late')).toBe(false)
     expect(stepStatus(runId).b).toBe('running')
@@ -271,6 +272,49 @@ describe('WorkflowScheduler', () => {
     expect(port.stops).toEqual([a.id, a.id])
     expect(service.showRun(runId).run.status).toBe('cancelled')
     expect(stepStatus(runId)).toEqual({ a: 'cancelled', b: 'cancelled' })
+  })
+
+  it('stops an agent that was still launching as soon as its start returns', async () => {
+    const { store, port, service, settle } = harness()
+    port.holdStartsAfterDispatch = true
+    const definition = service.createDefinition({ kind: 'workflow', body: sequential(['a', 'b']) })
+    const { run } = await service.startRun({
+      requestId: 'r',
+      definitionId: definition.id,
+      definitionRevision: 1,
+      snapshot: definition.body,
+      params: {},
+      workspaceId: 'ws-git'
+    })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await service.stopStep(run.id, 'a')
+    // The Dispatch exists, but its agent has no terminal yet; a stop now would be refused.
+    expect(port.stops).toEqual([])
+
+    port.releaseHeldStart()
+    await settle()
+    const a = port.dispatchesForStep('a')[0]!
+    expect(port.stops).toEqual([a.id])
+    expect(store.runs.listAttempts(run.id)).toMatchObject([
+      { stepId: 'a', state: 'stopped', dispatchId: a.id }
+    ])
+    expect(port.dispatchesForStep('b')).toHaveLength(0)
+  })
+
+  it('keeps a failed agent open until the run is cancelled, then releases it once', async () => {
+    const { port, launch, settle, service } = harness()
+    const runId = await launch(sequential(['a', 'b']))
+    const a = port.dispatchesForStep('a')[0]!
+    port.report(a.id, 'failed', 'Broke')
+    await settle()
+    expect(port.releases).toEqual([])
+
+    await service.cancelRun(runId)
+    await settle()
+    await settle()
+    expect(port.releases).toEqual([a.id])
+    expect(port.stops).toEqual([])
+    expect(port.dispatchesForStep('b')).toHaveLength(0)
   })
 
   it('reconciles after a restart without restarting live work', async () => {

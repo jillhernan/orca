@@ -165,8 +165,9 @@ function planStep(args: {
           'Isolated steps need a Git repository; this workspace is a plain folder.'
         )
       )
+    } else {
+      notes.add('isolated_from_commit')
     }
-    notes.add('isolated_from_commit')
   } else if (input.snapshot.maxConcurrency > 1 || (input.maxConcurrency ?? 1) > 1) {
     notes.add('shared_steps_take_turns')
   }

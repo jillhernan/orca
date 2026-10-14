@@ -13,6 +13,7 @@ import { formatUiRelativeTimeFromDate } from '@/i18n/relative-time-format'
 import type { WorkflowDefinition } from '../../../../shared/workflows/workflow-definition'
 import type { WorkflowRunSummary } from '../../../../shared/workflows/workflow-run-types'
 import { WorkflowRunStatusBadge } from './WorkflowStatusBadge'
+import { workflowStepCountLabel } from './workflow-count-copy'
 
 export type WorkflowRowAction =
   | 'open'
@@ -50,9 +51,7 @@ export function WorkflowListRow({
         <span className="flex min-w-0 items-baseline gap-2">
           <span className="truncate text-sm font-medium">{definition.body.name}</span>
           <span className="shrink-0 text-xs text-muted-foreground">
-            {translate('auto.components.workflows.list.stepCount', '{{value0}} steps', {
-              value0: steps
-            })}
+            {workflowStepCountLabel(steps)}
           </span>
         </span>
         <span className="block truncate text-xs text-muted-foreground">

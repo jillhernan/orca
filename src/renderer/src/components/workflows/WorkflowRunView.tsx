@@ -28,6 +28,7 @@ import { WorkflowGraphView } from './WorkflowGraphView'
 import { WorkflowRunStepPanel, type WorkflowStepPanelAction } from './WorkflowRunStepPanel'
 import { WorkflowRunEventLog } from './WorkflowRunEventLog'
 import { WorkflowLaunchDialog } from './WorkflowLaunchDialog'
+import { workflowRunProgressLabel } from './workflow-count-copy'
 
 export function WorkflowRunView({
   hostKey,
@@ -90,10 +91,11 @@ export function WorkflowRunView({
   const { run } = detail
   const terminal = WORKFLOW_TERMINAL_RUN_STATUSES.includes(run.status)
   const succeeded = detail.steps.filter((view) => view.status === 'succeeded').length
+  // Follows the first unfinished step; a finished run shows its last step, which holds the outcome.
   const selectedId =
     selectedStep ??
     detail.steps.find((view) => view.status !== 'succeeded')?.stepId ??
-    detail.steps[0]?.stepId
+    detail.steps.at(-1)?.stepId
   const selectedView = detail.steps.find((view) => view.stepId === selectedId)
   const selected = run.snapshot.steps.find((step) => step.id === selectedId)
 
@@ -224,14 +226,7 @@ export function WorkflowRunView({
             className="max-w-md"
           />
           <span className="text-xs text-muted-foreground tabular-nums">
-            {translate(
-              'auto.components.workflows.run.progress',
-              '{{value0}} of {{value1}} steps done',
-              {
-                value0: succeeded,
-                value1: detail.steps.length
-              }
-            )}
+            {workflowRunProgressLabel(succeeded, detail.steps.length)}
           </span>
         </div>
       </div>

@@ -2630,6 +2630,20 @@
           }
         }
       },
+      "workflows": {
+        "history": {
+          "steps_one": "{{done}}/{{count}} step",
+          "steps_other": "{{done}}/{{count}} steps"
+        },
+        "list": {
+          "stepCount_one": "{{count}} step",
+          "stepCount_other": "{{count}} steps"
+        },
+        "run": {
+          "progress_one": "{{done}} of {{count}} step done",
+          "progress_other": "{{done}} of {{count}} steps done"
+        }
+      },
       "workspace": {
         "cleanup": {
           "WorkspaceCleanupDialog": {

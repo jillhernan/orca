@@ -68,6 +68,9 @@ export class FakeWorkflowOrchestration implements WorkflowOrchestrationPort {
   nextStartFailure: string | null = null
   private pendingStart: (() => void) | null = null
   holdStarts = false
+  /** Holds starts after the Dispatch exists, as orchestration does while the agent launches. */
+  holdStartsAfterDispatch = false
+  private readonly launching = new Set<string>()
   private counter = 0
 
   private id(prefix: string): string {
@@ -133,11 +136,19 @@ export class FakeWorkflowOrchestration implements WorkflowOrchestrationPort {
     if (task) {
       task.status = 'dispatched'
     }
+    if (this.holdStartsAfterDispatch) {
+      this.launching.add(id)
+      await new Promise<void>((resolve) => {
+        this.pendingStart = resolve
+      })
+      this.launching.delete(id)
+    }
     return { dispatchId: id, failure: null }
   }
 
   releaseHeldStart(): void {
     this.holdStarts = false
+    this.holdStartsAfterDispatch = false
     this.pendingStart?.()
     this.pendingStart = null
   }
@@ -218,6 +229,9 @@ export class FakeWorkflowOrchestration implements WorkflowOrchestrationPort {
 
   async stopWorker(dispatchId: string): Promise<WorkflowStopOutcome> {
     this.stops.push(dispatchId)
+    if (this.launching.has(dispatchId)) {
+      return { kind: 'unknown', reason: 'The Dispatch has no recorded agent terminal.' }
+    }
     const dispatch = this.dispatches.get(dispatchId)
     if (dispatch && this.stopOutcome.kind === 'stopped') {
       dispatch.workerState = 'stopped'

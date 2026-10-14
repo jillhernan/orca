@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { translate } from '@/i18n/i18n'
+import { branchName } from '@/lib/git-utils'
 import type { WorkflowStep } from '../../../../shared/workflows/workflow-definition'
 import type { WorkflowRunDetail } from '../../../../shared/workflows/workflow-run-types'
 import { WorkflowArtifactList } from './WorkflowArtifactList'
@@ -61,7 +62,7 @@ export function WorkflowDecisionPanel({
                   'auto.components.workflows.decision.branch',
                   'Branch {{value0}} in {{value1}}',
                   {
-                    value0: attempt.target.branch ?? '?',
+                    value0: attempt.target.branch ? branchName(attempt.target.branch) : '?',
                     value1: attempt.target.path ?? attempt.target.workspaceLabel
                   }
                 )}
