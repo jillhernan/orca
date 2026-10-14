@@ -22,6 +22,8 @@ export const NODE_RUNTIME_INCLUDE = [
   'src/cli/**/*.test.ts',
   'src/main/persistence/**/*.test.ts',
   'src/main/persistence*.test.ts',
+  // workflows.db and the orchestration fixtures the scheduler drives.
+  'src/main/workflows/**/*.test.ts',
   'src/main/sqlite/**/*.test.ts',
   'src/main/orca-profiles/**/*.test.ts',
   'src/main/managed-data-accounts/**/*.test.ts',

@@ -564,6 +564,18 @@ import {
   TerminalUpdateViewport
 } from './terminal-viewport-schemas-params'
 import { UpdaterCheckParams } from './updater-params'
+import {
+  WorkflowDefinitionCreate,
+  WorkflowDefinitionId,
+  WorkflowDefinitionList,
+  WorkflowDefinitionRevisionParams,
+  WorkflowDefinitionUpdate,
+  WorkflowLaunch,
+  WorkflowRunId,
+  WorkflowRunList,
+  WorkflowStepDecision,
+  WorkflowStepRef
+} from './workflow-params'
 import { LayoutSubscribeParams, LayoutUnsubscribeParams } from './workspace-layout-params'
 import {
   WorkspacePortKillHostParams,
@@ -1278,6 +1290,23 @@ export const RPC_PARAMS_BY_METHOD = {
   'updater.download': null,
   'updater.getStatus': null,
   'updater.install': null,
+  'workflow.definitionCreate': WorkflowDefinitionCreate,
+  'workflow.definitionDelete': WorkflowDefinitionId,
+  'workflow.definitionList': WorkflowDefinitionList,
+  'workflow.definitionRevision': WorkflowDefinitionRevisionParams,
+  'workflow.definitionShow': WorkflowDefinitionId,
+  'workflow.definitionUpdate': WorkflowDefinitionUpdate,
+  'workflow.launchPreview': WorkflowLaunch,
+  'workflow.runCancel': WorkflowRunId,
+  'workflow.runList': WorkflowRunList,
+  'workflow.runPause': WorkflowRunId,
+  'workflow.runResume': WorkflowRunId,
+  'workflow.runShow': WorkflowRunId,
+  'workflow.runStart': WorkflowLaunch,
+  'workflow.stepDecide': WorkflowStepDecision,
+  'workflow.stepReopenDecision': WorkflowStepRef,
+  'workflow.stepRetry': WorkflowStepRef,
+  'workflow.stepStop': WorkflowStepRef,
   'workspacePorts.kill': WorkspacePortKillParams,
   'workspacePorts.killHost': WorkspacePortKillHostParams,
   'workspacePorts.scan': WorkspacePortScanParams,

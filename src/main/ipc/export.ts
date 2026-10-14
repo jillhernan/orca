@@ -11,7 +11,51 @@ export type ExportHtmlToPdfResult =
   | { success: true; filePath: string }
   | { success: false; cancelled?: boolean; error?: string }
 
+export type ExportSaveTextFileArgs = {
+  content: string
+  defaultName: string
+  extension: string
+  filterName: string
+}
+
+function sanitizeFileStem(name: string): string {
+  // Why: Windows forbids /\:*?"<>| in filenames; a bounded stem keeps the save dialog stable.
+  return name.replace(/[/\\:*?"<>|]/g, '_').slice(0, 100) || 'export'
+}
+
 export function registerExportHandlers(): void {
+  ipcMain.removeHandler('export:save-text-file')
+  ipcMain.handle(
+    'export:save-text-file',
+    async (event, args: ExportSaveTextFileArgs): Promise<ExportHtmlToPdfResult> => {
+      const extension = args.extension.replace(/[^a-z0-9.]/gi, '').slice(0, 24) || 'txt'
+      const parent = BrowserWindow.fromWebContents(event.sender) ?? undefined
+      const dialogOptions = {
+        defaultPath: `${sanitizeFileStem(args.defaultName)}.${extension}`,
+        filters: [
+          {
+            name: args.filterName.slice(0, 60) || extension,
+            extensions: [extension.split('.').pop() ?? extension]
+          }
+        ]
+      }
+      try {
+        const { canceled, filePath } = parent
+          ? await dialog.showSaveDialog(parent, dialogOptions)
+          : await dialog.showSaveDialog(dialogOptions)
+        if (canceled || !filePath) {
+          return { success: false, cancelled: true }
+        }
+        await writeFile(filePath, args.content, 'utf8')
+        return { success: true, filePath }
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Failed to save file'
+        }
+      }
+    }
+  )
   ipcMain.removeHandler('export:html-to-pdf')
   ipcMain.handle(
     'export:html-to-pdf',
@@ -24,11 +68,7 @@ export function registerExportHandlers(): void {
       try {
         const pdfBuffer = await htmlToPdf(html)
 
-        // Why: sanitize to keep the suggested filename legal on every platform.
-        // Windows forbids /\:*?"<>| in filenames; truncate to keep the OS save
-        // dialog stable when titles are pathologically long.
-        const sanitizedTitle = title.replace(/[/\\:*?"<>|]/g, '_').slice(0, 100) || 'export'
-        const defaultFilename = `${sanitizedTitle}.pdf`
+        const defaultFilename = `${sanitizeFileStem(title)}.pdf`
 
         const parent = BrowserWindow.fromWebContents(event.sender) ?? undefined
         const dialogOptions = {

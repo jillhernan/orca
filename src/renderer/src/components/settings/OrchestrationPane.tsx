@@ -20,6 +20,7 @@ import { buildSkillCommandForRuntime } from './CliSkillRuntimeSetup'
 import { OrchestrationSkillAgentCoverage } from './OrchestrationSkillAgentCoverage'
 import { SkillUsageExamplesSection } from './SkillUsageExamplesSection'
 import { OrchestrationSkillPromptDialog } from './OrchestrationSkillPromptDialog'
+import { OrchestrationWorkflowsSetting } from './OrchestrationWorkflowsSetting'
 import { translate } from '@/i18n/i18n'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import { resolveNestedWorkerMaxDepth } from '../../../../shared/nested-worker-depth'
@@ -155,6 +156,8 @@ export function OrchestrationPane({
           activeSkillRuntime.canUseLocalSkillFreshness ? ORCHESTRATION_SKILL_NAME : undefined
         }
       />
+
+      <OrchestrationWorkflowsSetting settings={settings} updateSettings={updateSettings} />
 
       {showNestedWorkerDepth ? (
         <NumberField

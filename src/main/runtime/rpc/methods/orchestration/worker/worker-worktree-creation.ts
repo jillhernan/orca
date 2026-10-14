@@ -69,7 +69,8 @@ export async function createWorkerWorktree(args: {
     lineage: {
       parentWorktree: requestedWorktree === 'new-child' ? coordinatorWorktree.id : undefined,
       noParent: requestedWorktree === 'new-top-level',
-      callerTerminalHandle: params.from
+      // A workflow Run's coordinator is its inbox, not a terminal; the parent above is the anchor.
+      callerTerminalHandle: params.from.startsWith('run:') ? undefined : params.from
     }
   })
   const terminalHandle = created.startupTerminal?.handle

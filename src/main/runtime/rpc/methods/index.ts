@@ -3,6 +3,7 @@ import { ORCAD_TERMINAL_CENSUS_METHODS } from './orcad-terminal-census'
 import { ORCAD_MIGRATION_METHODS } from './orcad-migration'
 import { AI_VAULT_METHODS } from './ai-vault'
 import { AUTOMATION_METHODS } from './automations'
+import { WORKFLOW_METHODS } from './workflows'
 import { REPO_METHODS } from './repo'
 import { WORKTREE_METHODS } from './worktree'
 import { REFERENCE_METHODS } from './reference'
@@ -72,6 +73,7 @@ export const ALL_RPC_METHODS = [
   ...AI_VAULT_METHODS,
   ...ARTIFACT_METHODS,
   ...AUTOMATION_METHODS,
+  ...WORKFLOW_METHODS,
   ...REPO_METHODS,
   ...WORKTREE_METHODS,
   ...REFERENCE_METHODS,

@@ -27,6 +27,7 @@ import {
   classifySkillInstallFailureCode
 } from '../../../shared/skill-install-failure'
 import { GIT_DIFF_TOO_LARGE_CODE } from '../../../shared/git-diff-transport-budget'
+import { isWorkflowErrorCode } from '../../../shared/workflows/workflow-error-codes'
 import { AUTOMATION_OWNER_CONFLICT_CODES } from '../../../shared/automation-owner-conflict'
 import { ARCHIVE_HOOK_FAILED_REMOVAL_CODE } from '../../../shared/worktree/archive-hook-removal-gate'
 import { NESTED_WORKER_DEPTH_EXCEEDED_CODE } from '../../../shared/nested-worker-depth'
@@ -226,6 +227,9 @@ export function mapRuntimeError(id: string, meta: RpcEnvelopeMeta, error: unknow
       message,
       (error as { data?: unknown }).data
     )
+  }
+  if (error instanceof Error && 'code' in error && isWorkflowErrorCode(error.code)) {
+    return errorResponse(id, meta, error.code, message, 'data' in error ? error.data : undefined)
   }
   if (RUNTIME_PASSTHROUGH_CODES.has(message)) {
     return errorResponse(id, meta, message, message)

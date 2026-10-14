@@ -1,0 +1,60 @@
+---
+title: Visual workflows
+description: Chain agent steps with dependencies, approvals and parameters, run them on this computer or a paired host, and reuse them as templates.
+---
+
+import { Callout } from '@/components/docs/prose'
+
+A **workflow** is a reusable list (or graph) of agent steps. When you run it, Orca starts each step's agent through [orchestration](/docs/cli/orchestration), passes each result to the steps that depend on it, and stops where you asked for a human decision. Open **Workflows** in the left sidebar.
+
+## Create a workflow
+
+1. Click **New workflow**, or **Use template** on the built-in *Add a small feature* example.
+2. Give it a name. Under each step, write the instructions, pick an agent (or keep the workflow or host default), and optionally a model and reasoning level. Only models the host reports are offered.
+3. Reorder steps with the arrow buttons or by dragging the handle. With **Step order: one after another**, each step runs after the one above it.
+4. Under **Pass to this step**, choose whether the previous step's result summary and changed-file list are added to the prompt.
+5. Click **Save**. Problems are listed next to the field they belong to; a workflow with problems can be saved as a draft but not run.
+
+Saving creates a new revision. Runs keep the revision they started with, so editing a workflow never changes a run in progress.
+
+## Branches, joins and approvals
+
+Switch **Step order** to **By dependencies** to draw a graph. Use **Connect steps** in the **Dependency graph** tab, or the **Runs after** checkboxes under each step; both edit the same definition. Orca refuses loops, missing steps and duplicate edges before a run starts.
+
+- **Approval** steps wait for you to approve or reject. Only your decision in Orca releases the next steps; an agent's report never does. After a rejection, **Decide again** reopens the question.
+- **Max parallel agent steps** (default 1) lets independent branches run at the same time. Steps that use the run workspace still take turns, so two agents never edit one folder at once.
+- A step set to **Its own new worktree** works in a new Git worktree branched from the run workspace's latest commit (uncommitted changes are not copied). Its code only reaches later steps through a **Code integration** step: the run lists each branch and its changed files, you merge them with your usual tools, then confirm. Orca never merges or forces anything for you. Plain-folder workspaces cannot host isolated steps and run every step one at a time.
+
+## Run it
+
+Click **Run**. Choose the execution host and a workspace on that host, fill in the parameters, and check **What will run**: it shows each step's agent and the exact prompt it will receive. **Start run** creates the run once, even if you click twice.
+
+While a run is open you can:
+
+- follow each step's status, attempts, timing and result summary;
+- **Open agent terminal** to watch or help a running step;
+- open the files a step reported changing (they belong to the step's host and workspace);
+- **Pause**: no new steps start; running steps continue and their results are recorded. **Resume** re-checks what is ready and starts it once.
+- **Cancel run**: stops only the agents this run started. If a host cannot confirm a stop, the step stays marked as unconfirmed until it can.
+
+Closing the page or reloading the window does not stop a run; the host keeps driving it. After Orca restarts, the host reconciles each step with orchestration's records and never restarts an agent that already finished or reports a dead process as recovered.
+
+## When a step fails
+
+The failure reason is shown on the step and later steps wait. **Retry step** starts a new attempt with the same prompt and inputs; finished steps keep their results and old attempts stay in the history. The workspace may still contain partial changes from the failed attempt. To change parameters or the workflow, use **Run again** instead, which starts a new run.
+
+## Parameters and templates
+
+Add parameters (text, multi-line text, number, yes/no, choice) on the **Parameters** tab, then use **Insert variable** in a step prompt. Values are inserted as plain text; nothing is evaluated. Don't use parameters for passwords or tokens.
+
+From the workflow list you can **Save as template**, **Duplicate**, **Export JSON** and **Import**. Exports carry `schemaVersion` and leave out hosts, workspaces, run history and credentials; an import only creates the definition, and you choose where it runs when you start it. Check exported prompts for anything you would not share.
+
+## Run on another host
+
+Pick a paired Orca host (for example a server you connected over SSH under [Remote servers](/docs/remote-servers)) as the execution host. That host stores the run, starts the agents in its own workspaces and owns their status; this window only follows it. If the host stops answering, the run shows the last state it reported, marked as unverifiable, and keeps going on the host. A host running an Orca version without workflows is listed as needing an update and cannot be chosen.
+
+<Callout title="How runs map to orchestration">
+  Each run is one orchestration Run, each step a Task, and each attempt a Dispatch. Completion comes
+  only from the worker's `worker_done` report for that Task and Dispatch, so a late report from an
+  old attempt can never finish a newer one. `orca orchestration task-list` shows the same tasks.
+</Callout>

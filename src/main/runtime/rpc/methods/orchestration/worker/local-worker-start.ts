@@ -53,9 +53,15 @@ export async function startLocalWorker(args: {
   orchestrationMutation?: WorkerStartMutation
   /** Settings-driven; the executing host still gets to refuse below. */
   mode: WorkerStartModeReceipt
+  /** Orca itself coordinates (a workflow run): no caller pane, placement anchors on this workspace. */
+  systemCoordinator?: { workspaceId: string; mailboxAddress: string }
 }): Promise<unknown> {
-  const { runtime, db, run, coordinator, callerSession, existingTask } = args
+  const { runtime, db, run, coordinator, callerSession, existingTask, systemCoordinator } = args
   const { orchestrationMutation } = args
+  const resolveCallerWorkspaceId = (): Promise<string> =>
+    systemCoordinator
+      ? Promise.resolve(systemCoordinator.workspaceId)
+      : resolveDispatchCallerWorktreeId(runtime, args.params.from, callerSession)
   // `--terminal` names a party: a chat by its `/clear` root address, as its Dispatch does.
   const terminal = args.params.terminal && resolveDispatchAssigneeParty(args.params.terminal, db)
   const params = terminal ? { ...args.params, terminal: terminal.address } : args.params
@@ -64,11 +70,7 @@ export async function startLocalWorker(args: {
   const requestedWorktree = params.worktree ?? 'current'
   const createsWorktree = requestedWorktree === 'new-child' || requestedWorktree === 'new-top-level'
   const launchParams = await resolveWorkerConfiguredAgentParams(runtime, params, async () => {
-    const callerWorkspaceId = await resolveDispatchCallerWorktreeId(
-      runtime,
-      params.from,
-      callerSession
-    )
+    const callerWorkspaceId = await resolveCallerWorkspaceId()
     const parent = createsWorktree
       ? await runtime.showManagedWorktree(`id:${callerWorkspaceId}`)
       : undefined
@@ -80,11 +82,7 @@ export async function startLocalWorker(args: {
   })
   let openCodeModelLaunchSupported = false
   if (!createsWorktree && launchParams.agent === 'opencode' && launchParams.model) {
-    const callerWorkspaceId = await resolveDispatchCallerWorktreeId(
-      runtime,
-      params.from,
-      callerSession
-    )
+    const callerWorkspaceId = await resolveCallerWorkspaceId()
     openCodeModelLaunchSupported = await probeWorkerOpenCodeModelLaunchSupport(
       runtime,
       launchParams,
@@ -99,11 +97,7 @@ export async function startLocalWorker(args: {
     openCodeModelLaunchSupported
   })
 
-  const coordinatorWorktreeId = await resolveDispatchCallerWorktreeId(
-    runtime,
-    params.from,
-    callerSession
-  )
+  const coordinatorWorktreeId = await resolveCallerWorkspaceId()
   const creationWorktree = createsWorktree
     ? await runtime.showManagedWorktree(`id:${coordinatorWorktreeId}`)
     : undefined
@@ -151,7 +145,11 @@ export async function startLocalWorker(args: {
       : 'existing_worktree'
   }
   const started = db.createStartingWorkerDispatch({
-    creator: resolveDispatchCreator(runtime, params.from, callerSession),
+    creator: resolveDispatchCreator(
+      runtime,
+      systemCoordinator ? undefined : params.from,
+      callerSession
+    ),
     maxDepth: runtime.getNestedWorkerMaxDepth(),
     taskId: existingTask?.id,
     taskSpec: params.spec,
@@ -279,7 +277,7 @@ export async function startLocalWorker(args: {
       dispatchDepth: started.dispatch.depth,
       structuredSession,
       terminalHandle,
-      coordinatorHandle: params.from,
+      coordinatorHandle: systemCoordinator?.mailboxAddress ?? params.from,
       devMode: params.devMode,
       requestId: orchestrationMutation?.requestId ?? started.dispatch.id,
       agent: agent ?? null,

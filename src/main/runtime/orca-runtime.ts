@@ -25,8 +25,27 @@ import { findWorkspaceReferences } from './runtime-reference-find'
 import { createReferenceAgentIndex, referenceConnectionHosts } from './runtime-reference-agents'
 import type { RuntimeReferenceFindParams } from '../../shared/runtime-reference-contracts'
 import { getRepoExecutionHostId } from '../../shared/execution-host'
+import type { WorkflowService } from '../workflows/workflow-service'
+import { WorkflowServiceError } from '../workflows/workflow-service-error'
 
 class OrcaRuntimeService extends OrcaRuntimeWithMigrationCatalog {
+  private workflowService: WorkflowService | null = null
+
+  setWorkflowService(service: WorkflowService | null): void {
+    this.workflowService = service
+  }
+
+  /** Workflow definitions and the runs this host executes; startup wires it once stores are ready. */
+  getWorkflowService(): WorkflowService {
+    if (!this.workflowService) {
+      throw new WorkflowServiceError(
+        'workflow_unavailable',
+        'Workflows are not available on this host. Restart Orca, or update it if this host runs an older version.'
+      )
+    }
+    return this.workflowService
+  }
+
   private async selectReferenceCatalogWorkspace(selector: string, cwd?: string) {
     const catalog = listReferenceWorkspaces(
       this.requireStore(),

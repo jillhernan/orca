@@ -43,6 +43,15 @@ export type ExportApi = {
   }) => Promise<
     { success: true; filePath: string } | { success: false; cancelled?: boolean; error?: string }
   >
+  /** Writes text to a path the user picks in the native save dialog. */
+  saveTextFile: (args: {
+    content: string
+    defaultName: string
+    extension: string
+    filterName: string
+  }) => Promise<
+    { success: true; filePath: string } | { success: false; cancelled?: boolean; error?: string }
+  >
 }
 
 export type FilesystemApi = {

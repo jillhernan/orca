@@ -7,5 +7,13 @@ export const exportApi = {
     title: string
   }): Promise<
     { success: true; filePath: string } | { success: false; cancelled?: boolean; error?: string }
-  > => ipcRenderer.invoke('export:html-to-pdf', args)
+  > => ipcRenderer.invoke('export:html-to-pdf', args),
+  saveTextFile: (args: {
+    content: string
+    defaultName: string
+    extension: string
+    filterName: string
+  }): Promise<
+    { success: true; filePath: string } | { success: false; cancelled?: boolean; error?: string }
+  > => ipcRenderer.invoke('export:save-text-file', args)
 } satisfies PreloadApi['export']

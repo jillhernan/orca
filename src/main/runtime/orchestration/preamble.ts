@@ -49,12 +49,20 @@ function isSessionHandle(handle: string): boolean {
   return handle.startsWith(ORCA_SESSION_ADDRESS_PREFIX)
 }
 
+function coordinatorIdentityLine(handle: string): string {
+  if (isSessionHandle(handle)) {
+    return `Your coordinator's Orca session ID is: ${handle}`
+  }
+  // A Run Orca coordinates itself (a workflow) has no coordinator pane, only its inbox.
+  return handle.startsWith('run:')
+    ? `Your coordinator is the Orca workflow that owns this Run; its inbox is: ${handle}`
+    : `Your coordinator's terminal handle is: ${handle}`
+}
+
 /** Terminal agents keep their handle's wording; only a session is named by its Orca session ID. */
 function dispatchIdentityLines(params: PreambleParams): string {
   return [
-    isSessionHandle(params.coordinatorHandle)
-      ? `Your coordinator's Orca session ID is: ${params.coordinatorHandle}`
-      : `Your coordinator's terminal handle is: ${params.coordinatorHandle}`,
+    coordinatorIdentityLine(params.coordinatorHandle),
     `Your task ID is: ${params.taskId}`,
     ...(isSessionHandle(params.workerHandle)
       ? [`Your Orca session ID is: ${params.workerHandle}`]
